@@ -38,6 +38,7 @@ def get_data():
     print("🔑 Found AIRTABLE_PAT, fetching live data from Airtable...")
     
     url = f"https://api.airtable.com/v0/{BASE_ID}/Production"
+    print(f"📡 Fetching data from Airtable API: {url}")
     headers = {
         "Authorization": f"Bearer {airtable_pat}",
         "Content-Type": "application/json"
@@ -93,9 +94,9 @@ def get_data():
             monthly_data[month]["production_loss"] += production_loss
             monthly_data[month]["sold_components"] += sold_components
             
-        monthlyDataList = []
     else:
         print(f"Error fetching data: {response.status_code} - {response.text}")
+    monthlyDataList = []
 
     urlDevelopment = f"https://api.airtable.com/v0/{BASE_ID}/Development"
     responseDevelopment = requests.get(urlDevelopment, headers=headers)
