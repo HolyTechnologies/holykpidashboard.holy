@@ -7,8 +7,24 @@ import json
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-def format_number(value):
-    return "{:,}".format(int(value))
+# i need another funciotn which will take care if converting the int value to K i.e if we get 22345 then we shoudl return 22.3K and if we get 1000000 then we should return 1M and so on yes
+def format_number_k(value):
+    typeFormat = {
+        0: "",
+        1: "K",
+        2: "M",
+        3: "B"
+    }
+    valueSign = ""
+    num = int(value)
+    count = 0
+    if num < 0:
+        valueSign = "-"
+        num = abs(num)
+    while num % 1000 > 0 and num > 1000:
+        num = num // 1000
+        count += 1
+    return f"{valueSign}{num}{typeFormat.get(count, '')}"
 
 def get_data():
     """
@@ -191,7 +207,7 @@ def build_site():
         loader=FileSystemLoader("templates"),
         autoescape=select_autoescape(['html', 'xml'])
     )
-    env.filters['format_number'] = format_number
+    env.filters['format_number_k'] = format_number_k
 
     try:
         template = env.get_template("index.html")

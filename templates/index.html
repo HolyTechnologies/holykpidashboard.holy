@@ -96,47 +96,55 @@
         .left-panel {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: clamp(8px, 1.2vh, 15px);
+            justify-content: space-between; /* Even distribution without center clustering */
+            gap: clamp(5px, 1.5vh, 2.5vh); /* Dynamic vertical gap */
             min-height: 0;
+            padding: clamp(5px, 1vh, 2vh) 0;
         }
 
         .right-panel {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: clamp(8px, 1.2vh, 15px);
+            justify-content: space-between; /* Even distribution without center clustering */
+            gap: clamp(5px, 1.5vh, 2.5vh); /* Dynamic vertical gap */
             min-height: 0;
+            padding: clamp(5px, 1vh, 2vh) 0;
         }
 
         .stats-card-title {
-            font-size: clamp(0.65rem, 1vh, 0.9rem);
+            font-size: clamp(2rem, 4vh, 3rem); /* Larger for distance viewing */
             font-weight: 600;
+            margin-bottom: clamp(2px, 0.5vh, 4px);
+            flex-shrink: 0;
         }
 
         .stats-card-value {
-            font-size: clamp(1rem, 2vh, 1.8rem);
+            font-size: clamp(1.8rem, 3.5vh, 2.8rem); /* Much larger for visibility */
             font-weight: bold;
+            margin-bottom: clamp(4px, 0.8vh, 8px);
+            flex-shrink: 0;
         }
 
         .stats-production-yield-chart {
-            height: 100%;
-            min-height: clamp(120px, 20vh, 200px);
+            flex: 1; /* Dynamic sizing */
+            min-height: clamp(120px, 18vh, 25vh); /* Responsive minimum */
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start; /* Align content to top */
             border: 0.01px solid #00000033;
-            padding: 20px;
+            padding: clamp(15px, 2vh, 3vh);
             border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .simple-chart {
             width: 100%;
+            flex: 1; /* Take remaining space after title/value */
             height: clamp(180px, 25vh, 300px);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: clamp(5px, 1vh, 10px);
+            margin-top: clamp(2px, 0.5vh, 5px);
         }
 
         .footer {
@@ -160,7 +168,7 @@
         </div>
         <div class="main-content">
             <div class="left-panel">
-                <h2 style="font-size: clamp(1rem, 1.8vh, 1.5rem); text-align: center; margin-bottom: clamp(5px, 1vh, 10px);">Production</h2>
+                <h2 style="font-size: clamp(2.5rem, 5vh, 4rem); text-align: left; margin-bottom: clamp(8px, 2vh, 16px); font-weight: 600;">Production</h2>
                 <div class="stats-production-yield-chart">
                     <div class="stats-card-title">#</div>
                     <div class="stats-card-value">{{ currentMonthSoldComponents }}</div>
@@ -168,12 +176,12 @@
                 </div>
                 <div class="stats-production-yield-chart">
                     <div class="stats-card-title">€</div>
-                    <div class="stats-card-value">{{ currentMonthProductionLoss | int | format_number }}</div>
+                    <div class="stats-card-value">{{ currentMonthProductionLoss | int | format_number_k }}</div>
                     <div id="productionLossChart" class="simple-chart"></div>
                 </div>
             </div>
             <div class="right-panel">
-                <h2 style="font-size: clamp(1rem, 1.8vh, 1.5rem); text-align: center; margin-bottom: clamp(5px, 1vh, 10px);">Development</h2>
+                <h2 style="font-size: clamp(2.5rem, 5vh, 4rem); text-align: left; margin-bottom: clamp(8px, 2vh, 16px); font-weight: 600;">Development</h2>
                 <div class="stats-production-yield-chart">
                     <div class="stats-card-title">#</div>
                     <div class="stats-card-value">{{ currentMonthDevelopmentGates }}</div>
@@ -181,7 +189,7 @@
                 </div>
                 <div class="stats-production-yield-chart">
                     <div class="stats-card-title">€</div>
-                    <div class="stats-card-value">{{ currentMonthDevelopmentLoss | int | format_number }}</div>
+                    <div class="stats-card-value">{{ currentMonthDevelopmentLoss | int | format_number_k }}</div>
                     <div id="developmentLossChart" class="simple-chart"></div>
                 </div>
             </div>
