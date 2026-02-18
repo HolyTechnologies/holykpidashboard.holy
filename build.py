@@ -174,6 +174,7 @@ def get_data():
         'currentMonthDevelopmentGates': currentMonthDevelopmentGates,
         "lastUpdated": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
     }
+    print(f"Final data prepared for template rendering: {finalData}")
     return finalData
 
 
