@@ -17,8 +17,9 @@ def get_data():
     Returns:
         list: List of records from Airtable or mock data for local testing.
     """
+    
+    BASE_ID = "app2EZKWApYuZU2wh"  # Replace with your Airtable Base ID
     airtable_pat = os.environ.get("AIRTABLE_PAT")
-    BASE_ID = os.environ.get("AIRTABLE_BASE_ID")
     
     if not airtable_pat:
         print("⚠️  AIRTABLE_PAT not found in environment variables.")
