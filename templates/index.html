@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Holy Technologies GmbH, Hamburg, Germany">
+    <meta name="copyright" content="© 2026 Holy Technologies GmbH. All rights reserved.">
+    <meta name="description" content="KPI Dashboard to track the progress of key performance indicators - Holy Technologies GmbH">
+    
+    <!-- Cache busting meta tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="cache-control" content="max-age=0">
+    
+    <!-- Dynamic refresh meta tag -->
+    <meta name="refresh-time" content="{{ lastUpdated }}">
+    
+    <title>KPI Dashboard - Holy Technologies GmbH</title>
+    <link rel="icon" type="image/png" href="assets/websiteLogo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: white;
+            padding: clamp(10px, 2vh, 20px);
+        }
+
+        .container {
+            width: 80vw;
+            min-width: 320px;
+            height: calc(100vh - clamp(20px, 4vh, 40px));
+            margin: 0 auto;
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            gap: clamp(8px, 1.5vh, 20px);
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: clamp(1.5rem, 3vh, 2.5rem);
+            font-weight: 300;
+            margin-bottom: 0;
+        }
+
+        .header .last-updated {
+            color: #718096;
+            font-size: clamp(0.7rem, 1.2vh, 0.9rem);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(15px, 2vw, 30px);
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            justify-content: center;
+            gap: clamp(10px, 1.5vh, 20px);
+            min-height: 0;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        .stats-card-title {
+            font-size: clamp(0.7rem, 1.2vh, 1rem);
+            font-weight: 600;
+            margin-bottom: clamp(4px, 1vh, 8px);
+        }
+
+        .stats-card-value {
+            font-size: clamp(1.2rem, 2.5vh, 2rem);
+            font-weight: bold;
+        }
+
+        .stats-production-yield-chart {
+            height: 100%;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .simple-chart {
+            width: 100%;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #718096;
+            font-size: clamp(0.6rem, 1vh, 0.75rem);
+            padding-top: clamp(8px, 1vh, 15px);
+            border-top: 1px solid #e2e8f0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 KPI Dashboard</h1>
+            <div class="last-updated" style="position:fixed;top:24px;right:32px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);padding:8px 16px;font-size:0.6rem;color:#718096;z-index:100;">
+                🔄 Last updated: {{ lastUpdated }}
+                <div style="font-size:0.5rem;margin-top:2px;color:#a0aec0;">v{{ lastUpdated | replace(' ', '') | replace(':', '') | replace('-', '') }}</div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="left-panel" style="display: flex; flex-direction: column; gap: clamp(15px, 2vh, 30px);">
+                <h2>Production</h2>
+                <div class="stats-production-yield-chart">
+                    <div class="stats-card-title">#</div>
+                    <div class="stats-card-value">{{ currentMonthSoldComponents }}</div>
+                    <div id="soldComponentsChart" class="simple-chart"></div>
+                </div>
+                <div class="stats-production-yield-chart">
+                    <div class="stats-card-title">€</div>
+                    <div class="stats-card-value">{{ currentMonthProductionLoss | int | format_number }}</div>
+                    <div id="productionLossChart" class="simple-chart"></div>
+                </div>
+            </div>
+            <div class="right-panel" style="display: flex; flex-direction: column; gap: clamp(15px, 2vh, 30px);">
+                <h2>Development</h2>
+                <div class="stats-production-yield-chart">
+                    <div class="stats-card-title">#</div>
+                    <div class="stats-card-value">{{ currentMonthDevelopmentGates }}</div>
+                    <div id="developmentGatesChart" class="simple-chart"></div>
+                </div>
+                <div class="stats-production-yield-chart">
+                    <div class="stats-card-title">€</div>
+                    <div class="stats-card-value">{{ currentMonthDevelopmentLoss | int | format_number }}</div>
+                    <div id="developmentLossChart" class="simple-chart"></div>
+                </div>
+            </div>
+        </div>
+        <script>
+            // Force page refresh if cache is detected
+            const lastRefresh = localStorage.getItem('lastRefresh');
+            const currentTime = new Date().getTime();
+            const refreshInterval = 60000; // 1 minute
+            
+            if (!lastRefresh || (currentTime - parseInt(lastRefresh)) > refreshInterval) {
+                localStorage.setItem('lastRefresh', currentTime.toString());
+            }
+            
+            // Add timestamp to prevent caching
+            const timestamp = new Date().getTime();
+            document.documentElement.setAttribute('data-timestamp', timestamp);
+            
+            // Data from Airtable
+            const monthlyData = {{ monthlyDataList | safe }};
+            const dataTimestamp = "{{ lastUpdated }}";
+            
+            // Check if we have newer data
+            const storedTimestamp = localStorage.getItem('dataTimestamp');
+            if (storedTimestamp !== dataTimestamp) {
+                localStorage.setItem('dataTimestamp', dataTimestamp);
+                // Clear any cached data
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            caches.delete(name);
+                        });
+                    });
+                }
+            }
+            
+            function createSimpleBarChart(containerId, dataKey, color) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                
+                if (!monthlyData || monthlyData.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No data available</div>';
+                    return;
+                }
+                
+                // Find min and max values for scaling (including negatives)
+                const values = monthlyData.map(item => item[dataKey] || 0);
+                const maxValue = Math.max(...values, 0);
+                const minValue = Math.min(...values, 0);
+                const maxRange = Math.max(Math.abs(maxValue), Math.abs(minValue));
+                
+                if (maxRange === 0) {
+                    container.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">All values are zero</div>';
+                    return;
+                }
+                
+                // Create chart container - use more space
+                const chartContainer = document.createElement('div');
+                chartContainer.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-around;
+                    height: 250px;
+                    width: 100%;
+                    padding: 15px 8px;
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+                    position: relative;
+                `;
+                
+                // Always add center zero line
+                const zeroLine = document.createElement('div');
+                zeroLine.style.cssText = `
+                    position: absolute;
+                    width: calc(100% - 16px);
+                    height: 1px;
+                    background: #999;
+                    top: 50%;
+                    left: 8px;
+                    z-index: 1;
+                    opacity: 0.6;
+                `;
+                chartContainer.appendChild(zeroLine);
+                
+                // Add small indicators for zero line
+                const zeroIndicator = document.createElement('div');
+                zeroIndicator.style.cssText = `
+                    position: absolute;
+                    left: 2px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    font-size: 9px;
+                    color: #666;
+                    font-weight: bold;
+                `;
+                zeroIndicator.textContent = '0';
+                chartContainer.appendChild(zeroIndicator);
+                
+                monthlyData.forEach((item, index) => {
+                    const value = item[dataKey] || 0;
+                    const isNegative = value < 0;
+                    // Use 110px as max height (half of 220px available space)
+                    const barHeight = Math.abs(value / maxRange) * 110;
+                    
+                    const barContainer = document.createElement('div');
+                    barContainer.style.cssText = `
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        flex: 1;
+                        margin: 0 1px;
+                        height: 100%;
+                        position: relative;
+                    `;
+                    
+                    const bar = document.createElement('div');
+                    const barColor = isNegative ? '#021F1D' : color; // Brighter red for negatives
+                    bar.style.cssText = `
+                        width: 85%;
+                        height: ${Math.max(barHeight, 3)}px;
+                        background: ${barColor};
+                        border-radius: 2px;
+                        transition: all 0.3s ease;
+                        cursor: pointer;
+                        position: absolute;
+                        ${isNegative ? 'top: 50%; transform-origin: top;' : 'bottom: 50%; transform-origin: bottom;'}
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                    `;
+                    
+                    // Month label - always at bottom
+                    const label = document.createElement('div');
+                    label.style.cssText = `
+                        position: absolute;
+                        bottom: 8px;
+                        font-size: 9px;
+                        color: #666;
+                        text-align: center;
+                        font-weight: 600;
+                        max-width: 100%;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    `;
+                    label.textContent = item.month ? item.month.substring(0, 3) : 'N/A';
+                    
+                    // Value label - positioned based on positive/negative
+                    const valueLabel = document.createElement('div');  
+                    valueLabel.style.cssText = `
+                        position: absolute;
+                        ${isNegative ? 'top: 52%;' : 'bottom: 52%;'}
+                        font-size: 7px;
+                        color: ${isNegative ? '#021F1D' : color};
+                        text-align: center;
+                        font-weight: bold;
+                        white-space: nowrap;
+                        background: rgba(255,255,255,0.8);
+                        padding: 1px 2px;
+                        border-radius: 2px;
+                        transform: translateX(-50%);
+                        left: 50%;
+                    `;
+                    valueLabel.textContent = value.toLocaleString();
+                    
+                    // Enhanced hover effects
+                    bar.addEventListener('mouseenter', () => {
+                        bar.style.opacity = '0.8';
+                        bar.style.transform = `scaleX(1.1) ${isNegative ? 'translateY(0)' : 'translateY(0)'}`;
+                        bar.title = `${item.month}: ${value.toLocaleString()}${isNegative ? ' (Loss)' : ''}`;
+                    });
+                    
+                    bar.addEventListener('mouseleave', () => {
+                        bar.style.opacity = '1';
+                        bar.style.transform = 'scaleX(1)';
+                    });
+                    
+                    barContainer.appendChild(bar);
+                    barContainer.appendChild(label);
+                    barContainer.appendChild(valueLabel);
+                    chartContainer.appendChild(barContainer);
+                });
+                
+                container.appendChild(chartContainer);
+            }
+            
+            // Create all charts
+            createSimpleBarChart('soldComponentsChart', 'sold_components', '#021F1D');
+            createSimpleBarChart('productionLossChart', 'production_loss', '#021F1D');
+            createSimpleBarChart('developmentGatesChart', 'development_gates', '#021F1D');
+            createSimpleBarChart('developmentLossChart', 'development_loss', '#021F1D');
+        </script>
+        
+        <div class="footer">
+            <div>
+                <p>&copy; 2026 <strong>Holy Technologies GmbH</strong>, Hamburg, Germany. All rights reserved.</p>
+                <span class="company-location">🏢 Hamburg, Germany</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

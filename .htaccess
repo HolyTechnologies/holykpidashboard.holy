@@ -1,0 +1,39 @@
+# Cache busting configuration for Iiyama CMS
+# This file should be uploaded along with your index.html
+
+# Prevent caching of HTML files
+<FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>
+
+# Force revalidation for all files
+<IfModule mod_headers.c>
+    # Add timestamp to response headers
+    Header set X-Cache-Buster "timestamp-%D"
+    
+    # Prevent proxy caching
+    Header set Cache-Control "no-cache, no-store, must-revalidate, private"
+    Header set Pragma "no-cache"
+    Header set Expires "Thu, 01 Jan 1970 00:00:00 GMT"
+    
+    # Add CORS headers if needed
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>
+
+# Alternative configuration if mod_headers is not available
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access plus 0 seconds"
+    ExpiresByType text/css "access plus 0 seconds"
+    ExpiresByType application/javascript "access plus 0 seconds"
+</IfModule>
+
+# Force download instead of cache
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Add timestamp query parameter to HTML files
+    RewriteCond %{REQUEST_FILENAME} \.html$ [NC]
+    RewriteRule ^(.*)$ $1?t=%{TIME} [L,QSA]
+</IfModule>
