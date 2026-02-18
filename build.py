@@ -7,10 +7,6 @@ import json
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-# Constants - Replace with your actual Airtable details
-BASE_ID = "app2EZKWApYuZU2wh"  # Replace with your Airtable Base ID
-TABLE_NAME = "tbl6y2QcI11Yn5Mn5"  # Replace with your table name
-
 def format_number(value):
     return "{:,}".format(int(value))
 
@@ -22,6 +18,7 @@ def get_data():
         list: List of records from Airtable or mock data for local testing.
     """
     airtable_pat = os.environ.get("AIRTABLE_PAT")
+    BASE_ID = os.environ.get("AIRTABLE_BASE_ID")
     
     if not airtable_pat:
         print("⚠️  AIRTABLE_PAT not found in environment variables.")
@@ -226,8 +223,7 @@ def build_site():
         raise
 
 if __name__ == "__main__":
-    print("🚀 Starting Airtable Static Site Generator...")  
-    print(f"📊 Base ID: {BASE_ID}")
+    print("🚀 Starting Airtable Static Site Generator...")
     print("=" * 50)
     
     build_site()
